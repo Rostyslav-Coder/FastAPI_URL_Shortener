@@ -1,13 +1,11 @@
 """src/main.py"""
 
-import secrets
-
 import validators
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
-from src import models, schemas
+from src import crud, models, schemas
 from src.database import SessionLocal, engine
 
 app = FastAPI()
@@ -41,38 +39,23 @@ def root():
 
 
 @app.post("/url", response_model=schemas.URLOut, name="Create URL")
-def create_url(url: schemas.URLBase, db: Session = Depends(get_db)):
+def create_url(input_url: schemas.URLBase, db: Session = Depends(get_db)):
     """Function to create entry in database"""
-    if not validators.url(url.target_url):
+    if not validators.url(input_url.target_url):
         raise_bad_request_msg(message="Your URL is not valid")
 
-    chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    user_url = "".join(secrets.choice(chars) for _ in range(5))
-    admin_url = "".join(secrets.choice(chars) for _ in range(8))
-    db_url = models.URL(
-        target_url=url.target_url, user_url=user_url, admin_url=admin_url
-    )
-
-    db.add(db_url)
-    db.commit()
-    db.refresh(db_url)
-    db_url.user_url = user_url
-    db_url.admin_url = admin_url
+    db_url = crud.create_db_url(db=db, url=input_url)
+    db_url.user_url = db_url.user_url
+    db_url.admin_url = db_url.admin_url
 
     return db_url
 
 
-@app.get("/url/{user_url}", name="Redirect to URL")
+@app.get("/url/{input_url}", name="Redirect to URL")
 def redirect_to_target_url(
-    user_url: str, request: Request, db: Session = Depends(get_db)
+    input_url: str, request: Request, db: Session = Depends(get_db)
 ):
     """Function that take user Url & redirect User to target Url"""
-    db_url = (
-        db.query(models.URL)
-        .filter(models.URL.user_url == user_url, models.URL.is_active)
-        .first()
-    )
-
-    if not db_url:
-        raise_not_found_msg(request)
-    return RedirectResponse(db_url.target_url)
+    if db_url := crud.get_db_url_by_user_url(db=db, user_url=input_url):
+        return RedirectResponse(db_url.target_url)
+    raise_not_found_msg(request)
