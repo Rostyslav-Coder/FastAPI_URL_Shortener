@@ -2,35 +2,30 @@
 
 from sqlalchemy.orm import Session
 
-from src import models, schemas, urlgen
+from src.keygen import create_alias, create_unique_alias
+from src.models import URL
+from src.schemas import URLBase
 
 
-def create_db_url(db: Session, url: schemas.URLBase) -> models.URL:
-    """Function create URL in database"""
-    random_user_url = urlgen.create_unique_random_url(db)
-    random_admin_url = f"{random_user_url}_{urlgen.create_random_url(length=8)}"
-    db_url = models.URL(
-        target_url=url.target_url, user_url=random_user_url, admin_url=random_admin_url
+def create_db_url(database: Session, input_url: URLBase) -> URL:
+    """Function to create URL in database"""
+    user_key = create_unique_alias(database)
+    admin_key = f"{user_key}_{create_alias(length=8)}"
+    created_url = URL(
+        target_url=input_url.target_url, user_url=user_key, admin_key=admin_key
     )
-    db.add(db_url)
-    db.commit()
-    db.refresh(db_url)
+    database.add(created_url)
+    database.commit()
+    database.refresh(created_url)
 
-    return db_url
+    return created_url
 
 
-def get_url_by_input_url(db: Session, user_url: str) -> models.URL:
+def get_url_by_key(database: Session, user_key: str) -> URL:
     """Function return URL from database by user URL"""
-    return (
-        db.query(models.URL)
-        .filter(models.URL.user_url == user_url, models.URL.is_active)
-        .first()
-    )
+    return database.query(URL).filter(URL.short_url == user_key, URL.is_active).first()
 
 
-def get_url_by_admin_url(db: Session, input_admin_url: str) -> models.URL:
-    return (
-        db.query(models.URL)
-        .filter(models.URL.admin_url == input_admin_url, models.URL.id)
-        .first()
-    )
+def get_url_by_admin_key(database: Session, admin_key: str) -> URL:
+    """Function return URL from database by admin key"""
+    return database.query(URL).filter(URL.admin_url == admin_key, URL.id).first()
