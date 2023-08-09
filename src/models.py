@@ -8,7 +8,7 @@ from src.database import Base
 class URL(Base):
     """Class to init database table URL"""
 
-    __teblaname__ = "urls"
+    __tablename__ = "urls"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_url = Column(String, unique=True, index=True)
