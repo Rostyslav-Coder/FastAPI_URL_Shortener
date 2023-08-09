@@ -59,3 +59,13 @@ def redirect_to_target_url(
     if db_url := crud.get_url_by_input_url(db=db, user_url=input_url):
         return RedirectResponse(db_url.target_url)
     raise_not_found(request)
+
+
+@app.get("/admin/{input_admin_url}", response_model=schemas.URLOut, name="admin info")
+def get_url_info(input_admin_url: str, request: Request, db: Session = Depends(get_db)):
+    """Function get URL by admin url"""
+    if db_url := crud.get_url_by_admin_url(db, input_admin_url=input_admin_url):
+        db_url.short_url = db_url.short_url
+        db_url.admin_url = db_url.admin_url
+        return db_url
+    raise_not_found(request)

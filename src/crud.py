@@ -26,3 +26,11 @@ def get_url_by_input_url(db: Session, user_url: str) -> models.URL:
         .filter(models.URL.user_url == user_url, models.URL.is_active)
         .first()
     )
+
+
+def get_url_by_admin_url(db: Session, input_admin_url: str) -> models.URL:
+    return (
+        db.query(models.URL)
+        .filter(models.URL.admin_url == input_admin_url, models.URL.id)
+        .first()
+    )
