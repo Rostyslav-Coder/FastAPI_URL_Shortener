@@ -5,7 +5,7 @@ import string
 
 from sqlalchemy.orm import Session
 
-from src.crud import get_url_by_key
+from src import crud
 
 
 def create_alias(length: int = 5) -> str:
@@ -18,6 +18,6 @@ def create_alias(length: int = 5) -> str:
 def create_unique_alias(database: Session) -> str:
     """Function generate only unique URL"""
     unique_url = create_alias()
-    while get_url_by_key(database, unique_url):
+    while crud.get_url_by_key(database, unique_url):
         unique_url = create_alias()
     return unique_url

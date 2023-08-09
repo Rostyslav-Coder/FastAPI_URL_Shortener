@@ -2,15 +2,15 @@
 
 from sqlalchemy.orm import Session
 
-from src.keygen import create_alias, create_unique_alias
+from src import keygen
 from src.models import URL
 from src.schemas import URLBase
 
 
 def create_db_url(database: Session, input_url: URLBase) -> URL:
     """Function to create URL in database"""
-    user_key = create_unique_alias(database)
-    admin_key = f"{user_key}_{create_alias(length=8)}"
+    user_key = keygen.create_unique_alias(database)
+    admin_key = f"{user_key}_{keygen.create_alias(length=8)}"
     created_url = URL(
         target_url=input_url.target_url, user_url=user_key, admin_key=admin_key
     )
