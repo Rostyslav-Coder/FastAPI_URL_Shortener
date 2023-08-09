@@ -11,7 +11,7 @@ class URL(Base):
     __tablename__ = "urls"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_url = Column(String, unique=True, index=True)
+    short_url = Column(String, unique=True, index=True)
     admin_url = Column(String, unique=True, index=True)
     target_url = Column(String, index=True)
     is_active = Column(Boolean, default=True)

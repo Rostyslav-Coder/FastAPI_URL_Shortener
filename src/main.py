@@ -21,12 +21,12 @@ def get_db():
         db.close()
 
 
-def raise_bad_request_msg(message):
+def raise_bad_request(message):
     """Function to raise bad request exceptions"""
     raise HTTPException(status_code=400, detail=message)
 
 
-def raise_not_found_msg(request):
+def raise_not_found(request):
     """Function to raise not found exceptions"""
     message = f"URL '{request.url}' doesn`t exist"
     raise HTTPException(status_code=404, detail=message)
@@ -42,7 +42,7 @@ def root():
 def create_url(input_url: schemas.URLBase, db: Session = Depends(get_db)):
     """Function to create entry in database"""
     if not validators.url(input_url.target_url):
-        raise_bad_request_msg(message="Your URL is not valid")
+        raise_bad_request(message="Your URL is not valid")
 
     db_url = crud.create_db_url(db=db, url=input_url)
     db_url.user_url = db_url.user_url
@@ -56,6 +56,6 @@ def redirect_to_target_url(
     input_url: str, request: Request, db: Session = Depends(get_db)
 ):
     """Function that take user Url & redirect User to target Url"""
-    if db_url := crud.get_db_url_by_user_url(db=db, user_url=input_url):
+    if db_url := crud.get_url_by_input_url(db=db, user_url=input_url):
         return RedirectResponse(db_url.target_url)
-    raise_not_found_msg(request)
+    raise_not_found(request)
