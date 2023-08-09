@@ -7,8 +7,8 @@ from src import models, schemas, short_url_gen
 
 def create_db_url(db: Session, url: schemas.URLBase) -> models.URL:
     """Function create URL in database"""
-    random_user_url = short_url_gen.create_random_url()
-    random_admin_url = short_url_gen.create_random_url(length=8)
+    random_user_url = short_url_gen.create_unique_random_url(db)
+    random_admin_url = f"{random_user_url}_{short_url_gen.create_random_url(length=8)}"
     db_url = models.URL(
         target_url=url.target_url, user_url=random_user_url, admin_url=random_admin_url
     )
