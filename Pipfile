@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+fastapi = "~=0.100"
+uvicorn = "~=0.23"
+sqlalchemy = "~=2.0"
+pydantic-settings = "*"
+python-dotenv = "*"
+validators = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"
