@@ -3,7 +3,8 @@
 import secrets
 
 import validators
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from src import models, schemas
@@ -23,8 +24,14 @@ def get_db():
 
 
 def raise_bad_request_msg(message):
-    """Function to raise HTTP Exceptions"""
+    """Function to raise bad request exceptions"""
     raise HTTPException(status_code=400, detail=message)
+
+
+def raise_not_found_msg(request):
+    """Function to raise not found exceptions"""
+    message = f"URL '{request.url}' doesn`t exist"
+    raise HTTPException(status_code=404, detail=message)
 
 
 @app.get("/", name="Welcome page")
@@ -53,3 +60,19 @@ def create_url(url: schemas.URLBase, db: Session = Depends(get_db)):
     db_url.admin_url = admin_url
 
     return db_url
+
+
+@app.get("/url/{user_url}", name="Redirect to URL")
+def redirect_to_target_url(
+    user_url: str, request: Request, db: Session = Depends(get_db)
+):
+    """Function that take user Url & redirect User to target Url"""
+    db_url = (
+        db.query(models.URL)
+        .filter(models.URL.user_url == user_url, models.URL.is_active)
+        .first()
+    )
+
+    if not db_url:
+        raise_not_found_msg(request)
+    return RedirectResponse(db_url.target_url)
