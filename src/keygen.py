@@ -5,19 +5,19 @@ import string
 
 from sqlalchemy.orm import Session
 
-from src import crud
+from src.crud import get_url_by_key
 
 
-def create_random_url(length: int = 5) -> str:
+def create_alias(length: int = 5) -> str:
     """Function to generate random short URL"""
     chars = string.ascii_uppercase + string.digits
 
     return "".join(secrets.choice(chars) for _ in range(length))
 
 
-def create_unique_random_url(db: Session) -> str:
+def create_unique_alias(database: Session) -> str:
     """Function generate only unique URL"""
-    unique_url = create_random_url()
-    while crud.get_db_url_by_input_url(db, unique_url):
-        unique_url = create_random_url()
+    unique_url = create_alias()
+    while get_url_by_key(database, unique_url):
+        unique_url = create_alias()
     return unique_url
