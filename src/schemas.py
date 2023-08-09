@@ -18,7 +18,7 @@ class URLIn(URLBase):
     class Config:
         """Inner configuration class"""
 
-        orm_mode = True
+        from_attributes = True
 
 
 class URLOut(URLIn):
