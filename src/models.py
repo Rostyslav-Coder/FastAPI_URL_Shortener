@@ -12,7 +12,7 @@ class URL(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     short_url = Column(String, unique=True, index=True)
-    admin_key = Column(String, unique=True, index=True)
+    admin_url = Column(String, unique=True, index=True)
     target_url = Column(String, index=True)
     is_active = Column(Boolean, default=True)
     clicks = Column(Integer, default=0)
