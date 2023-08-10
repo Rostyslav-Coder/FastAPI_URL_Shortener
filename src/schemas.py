@@ -25,4 +25,4 @@ class URLOut(URLIn):
     """Outer class URL"""
 
     short_url: str
-    admin_url: str
+    admin_info: str
