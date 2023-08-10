@@ -32,6 +32,11 @@ def get_db():
         database.close()
 
 
+def url_validation(url: URLBase) -> None:
+    if not validators.url(url.target_url):
+        call_bad_request(message="Your URL is not valid")
+
+
 def get_admin_info(db_url: models.URL) -> URLOut:
     """Function complements the URLIn model to the URLOut model"""
     base_url = URL(get_settings().base_url)
@@ -64,24 +69,25 @@ def read_root():
 @app.post("/url", response_model=URLOut, name="Create URL")
 def create_url(url: URLBase, database: Session = Depends(get_db)):
     """Path to create entry in database"""
-    if not validators.url(url.target_url):
-        call_bad_request(message="Your URL is not valid")
+
+    url_validation(url=url)
 
     db_url = create_db_url(database=database, url=url, user_key=None)
+
     return get_admin_info(db_url)
 
 
 @app.post(
     "/url/{user_key}",
     response_model=URLOut,
-    name="Create URL with user custom url",
+    name="Create URL with custom url",
 )
 def create_user_url(
     url: URLBase, user_key: str, database: Session = Depends(get_db)
 ):
     """Path to create entry in database with custom url"""
-    if not validators.url(url.target_url):
-        call_bad_request(message="Your provided URL is not valid")
+
+    url_validation(url=url)
 
     db_url = create_db_url(database=database, url=url, user_key=user_key)
 
@@ -93,12 +99,14 @@ def redirect_to_target_url(
     short_url: str, request: Request, database: Session = Depends(get_db)
 ):
     """Path to redirect User to target Url by short Url"""
+
     db_url = get_url_by_short(database=database, short_url=short_url)
 
     if not db_url:
         call_not_found(request)
 
     update_db_clicks(database=database, db_url=db_url)
+
     return RedirectResponse(db_url.target_url)
 
 
@@ -109,6 +117,7 @@ def get_url_info(
     secret_key: str, request: Request, database: Session = Depends(get_db)
 ):
     """Path to get admin info by admin key"""
+
     db_url = get_url_by_admin_key(database=database, secret_key=secret_key)
 
     if not db_url:
@@ -122,10 +131,12 @@ def delete_url(
     secret_key: str, request: Request, database: Session = Depends(get_db)
 ):
     """Path to deactivate short url"""
+
     db_url = deactivate_url_by_secret_key(
         database=database, secret_key=secret_key
     )
+
     if not db_url:
         call_not_found(request)
-    message = f"Successfully deleted for '{db_url.target_url}'"
-    return {"detail": message}
+
+    return {"detail": f"Successfully deleted for '{db_url.target_url}'"}
