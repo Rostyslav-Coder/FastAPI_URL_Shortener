@@ -67,7 +67,24 @@ def create_url(url: URLBase, database: Session = Depends(get_db)):
     if not validators.url(url.target_url):
         call_bad_request(message="Your URL is not valid")
 
-    db_url = create_db_url(database=database, url=url)
+    db_url = create_db_url(database=database, url=url, user_key=None)
+    return get_admin_info(db_url)
+
+
+@app.post(
+    "/url/{user_key}",
+    response_model=URLOut,
+    name="Create URL with user custom url",
+)
+def create_user_url(
+    url: URLBase, user_key: str, database: Session = Depends(get_db)
+):
+    """Path to create entry in database with custom url"""
+    if not validators.url(url.target_url):
+        call_bad_request(message="Your provided URL is not valid")
+
+    db_url = create_db_url(database=database, url=url, user_key=user_key)
+
     return get_admin_info(db_url)
 
 

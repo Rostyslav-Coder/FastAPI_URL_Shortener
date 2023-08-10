@@ -7,15 +7,18 @@ from src.models import URL
 from src.schemas import URLBase, URLIn
 
 
-def create_db_url(database: Session, url: URLBase) -> URL:
+def create_db_url(database: Session, url: URLBase, user_key: str) -> URL:
     """Function to create URL in database"""
-    random_url = keygen.create_unique_alias(database)
-    admin_url = f"{random_url}_{keygen.create_alias(length=8)}"
+    if not user_key:
+        user_key = keygen.create_unique_alias(database)
+    admin_url = f"{user_key}_{keygen.create_alias(length=8)}"
+
     created_url = URL(
         target_url=url.target_url,
-        short_url=random_url,
+        short_url=user_key,
         admin_info=admin_url,
     )
+
     database.add(created_url)
     database.commit()
     database.refresh(created_url)
